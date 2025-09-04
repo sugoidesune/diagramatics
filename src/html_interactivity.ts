@@ -408,9 +408,10 @@ export class Interactive {
      * @param step step size
      * @param time time of the animation in milliseconds
      * @param display_format_func function to format the display of the value
+     * @param loop : boolean = false, set to true to loop the slider animation
     */
     public slider(variable_name : string, min : number = 0, max : number = 100, value : number = 50, step : number = -1, 
-        time : number = 1.5, display_format_func : formatFunction = defaultFormat_f){
+        time : number = 1.5, display_format_func : formatFunction = defaultFormat_f, loop: boolean = false){
         // if the step is -1, then it is automatically calculated
         if (step == -1){ step = (max - min) / 100; }
 
@@ -456,9 +457,19 @@ export class Interactive {
                 this.intervals[variable_name] = setInterval(() => {
                     let val = parseFloat(slider.value);
                     val += step;
-                    // wrap around
-                    val = ((val - min) % (max - min)) + min;
-                    
+
+                    // Handle stopping at max if looping is disabled
+                    if (val >= max && !loop) {
+                        val = max;
+                        playbutton.classList.remove("paused");
+                        clearInterval(this.intervals[variable_name]);
+                        this.intervals[variable_name] = undefined;
+                    } else {
+                        // Wrap around to min if looping is enabled or not at max
+                        val = ((val - min) % (max - min)) + min;
+                    }
+
+                    // Always update the slider and call the callback
                     slider.value = val.toString();
                     callback(val);
                 }, interval_time);
