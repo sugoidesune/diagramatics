@@ -454,12 +454,16 @@ export class Interactive {
             if (this.intervals[variable_name] == undefined){
                 // if is not playing
                 playbutton.classList.add("paused");
+                let is_first_draw_interval = true;
                 this.intervals[variable_name] = setInterval(() => {
                     let val = parseFloat(slider.value);
                     val += step;
 
                     // Handle stopping at max if looping is disabled
-                    if (val >= max && !loop) {
+                    // if slider is at max and we want to replay
+                    // we check if its the is_first_draw_interval
+                    // so that it succesfully wraps around
+                    if (val >= max && !loop && !is_first_draw_interval) {
                         val = max;
                         playbutton.classList.remove("paused");
                         clearInterval(this.intervals[variable_name]);
@@ -468,6 +472,7 @@ export class Interactive {
                         // Wrap around to min if looping is enabled or not at max
                         val = ((val - min) % (max - min)) + min;
                     }
+                    is_first_draw_interval = false;
 
                     // Always update the slider and call the callback
                     slider.value = val.toString();
