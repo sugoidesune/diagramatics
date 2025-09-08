@@ -16,7 +16,10 @@ export function rectangle(width : number, height : number) : Diagram {
         V2(-width/2,-height/2), V2( width/2,-height/2), 
         V2( width/2, height/2), V2(-width/2, height/2)
     ];
-    return polygon(points);
+    const poly = polygon(points);
+    poly.width = width;
+    poly.height = height;
+    return poly;
 }
 
 /**
@@ -54,7 +57,10 @@ export function regular_polygon(n : number, radius : number = 1) : Diagram {
     for (let i = 0; i < n; i++) {
         points.push(V2(0,radius).rotate(i*2*Math.PI/n));
     }
-    return polygon(points);
+    const poly = polygon(points);
+    poly.radius = radius;
+    poly.sides = n;
+    return poly;
 }
 
 /**
@@ -76,7 +82,10 @@ export function regular_polygon_side(n : number, sidelength : number = 1) : Diag
  * @returns a Diagram object
  */
 export function circle(radius : number = 1) : Diagram {
-    return regular_polygon(50, radius).append_tags(TAG.CIRCLE);
+    const regular_poly = regular_polygon(50, radius).append_tags(TAG.CIRCLE);
+    regular_poly.width = 2*radius;
+    regular_poly.height = 2*radius;
+    return regular_poly;
 }
 
 /**
@@ -91,7 +100,10 @@ export function arc(radius : number = 1, angle : number = to_radian(360)) : Diag
     for (let i = 0; i < n; i++) {
         points.push(V2(radius,0).rotate(i*angle/(n-1)));
     }
-    return curve(points);
+    let curv = curve(points)
+    curv.radius = radius;
+    curv.angle = angle;
+    return curv;
 }
 
 /**

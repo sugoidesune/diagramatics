@@ -130,6 +130,11 @@ export class Diagram {
     foreignobjdata: Partial<ForeignObjectData> = {};
     mutable       : boolean   = false;
     tags : string[] = [];
+    width : number | undefined = undefined;  // used by square, rectangle, circle
+    height : number | undefined = undefined; // used by square, rectangle, circle
+    radius : number | undefined = undefined; // used by circle and arc
+    angle : number | undefined = undefined;  // used by arc
+    sides : number | undefined = undefined;  // used by polygon
     
     private _bbox_cache : [Vector2, Vector2] | undefined = undefined;
 
@@ -1252,6 +1257,8 @@ export function foreign_object(innerHTML : string, width: number, height: number
         V2(width/2, height/2), V2(-width/2, height/2),
     ]);
     let foreignObject = new Diagram(DiagramType.ForeignObject, {foreignobjdata, path});
+    foreignObject.width = width;
+    foreignObject.height = height;
     return foreignObject;
 }
 
