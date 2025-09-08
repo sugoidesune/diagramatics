@@ -597,18 +597,50 @@ export class Diagram {
     /**
      * Transform the diagram by a function
      * @param transform_function function to transform the diagram
+     *
+     * Notes:
+     *  - We sample the transform function at (0,0), (1,0), (0,1) to detect the linear part of the transform
+     *    and extract the scaling factors in x and y direction.
+     *  - We then scale the stored width, height, radius by these factors.
      */
     public transform(transform_function : (p : Vector2) => Vector2) : Diagram {
         let newd : Diagram = this.copy_if_not_mutable();
         newd._bbox_cache = undefined;
+
         // transform all children
-        // newd.children = newd.children.map(c => c.transform(transform_function));
         for (let i = 0; i < newd.children.length; i++)
             newd.children[i] = newd.children[i].transform(transform_function);
+
         // transform path
         if (newd.path != undefined) newd.path = newd.path.transform(transform_function);
+
         // transform origin
         newd.origin = transform_function(newd.origin);
+
+        // sample transform function to extract scaling factors
+        try {
+            const p0 = transform_function(new Vector2(0, 0));
+            const px = transform_function(new Vector2(1, 0));
+            const py = transform_function(new Vector2(0, 1));
+
+            const col1 = px.sub(p0); // A * (1,0)
+            const col2 = py.sub(p0); // A * (0,1)
+
+            const sx = Math.sqrt(col1.x * col1.x + col1.y * col1.y);
+            const sy = Math.sqrt(col2.x * col2.x + col2.y * col2.y);
+
+            const det = col1.x * col2.y - col1.y * col2.x;
+            const radiusScale = Math.sqrt(Math.abs(det));
+
+            // Update stored dimensions on this node (children already updated recursively)
+            if (newd.width !== undefined)  newd.width  = newd.width  * sx;
+            if (newd.height !== undefined) newd.height = newd.height * sy;
+            if (newd.radius !== undefined) newd.radius = newd.radius * radiusScale;
+
+        } catch (e) {
+            console.warn("Warning: transform sampling failed, skipping dimension updates.");
+        }
+
         return newd;
     }
 
